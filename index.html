@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<meta name="theme-color" content="#EEF1EC">
+<title>Ponto da Jôse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EEF1EC;--surface:#FFFFFF;--ink:#1D2B2A;--muted:#5E6E6B;--line:#D5DCD6;--in:#2F7D5B;--out:#B5523B;--accent:#D9952B;--accent-ink:#3A2606;--soft:#E2E8E1;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root{--bg:#141B1A;--surface:#1D2725;--ink:#E7EEEA;--muted:#9AABA6;--line:#2F3B39;--in:#55B488;--out:#E0806A;--accent:#E8AE4E;--accent-ink:#2A1A02;--soft:#24302E}}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:"Bricolage Grotesque",Figtree,system-ui,sans-serif;letter-spacing:-.01em;margin:0}
+.wrap{max-width:640px;margin:0 auto;padding:16px 16px 110px}
+header.top{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0 16px}
+header.top h1{font-size:1.25rem}
+.link{background:none;border:0;color:var(--muted);font:500 .9rem Figtree,sans-serif;cursor:pointer;text-decoration:underline}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;gap:4px;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+nav.tabs button{flex:1;max-width:150px;background:none;border:0;color:var(--muted);font:600 .85rem Figtree,sans-serif;padding:10px 4px;border-radius:10px;cursor:pointer}
+nav.tabs button[aria-current="true"]{color:var(--ink);background:var(--soft)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.clock{padding:28px 0 8px}
+.clock .date{color:var(--muted);font-weight:500;text-transform:capitalize}
+.clock .time{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:clamp(4.5rem,24vw,8.5rem);line-height:.9;letter-spacing:-.04em;font-variant-numeric:tabular-nums;margin:6px 0 4px}
+.clock .time span{color:var(--muted);font-weight:500}
+.status{font-size:1.05rem;margin:12px 0 22px;min-height:1.5em}
+.punch{display:block;width:100%;border:0;border-radius:22px;padding:26px 20px;font:700 1.45rem "Bricolage Grotesque",sans-serif;color:#fff;cursor:pointer;transition:transform .12s}
+.punch:active{transform:scale(.98)}
+.punch.in{background:var(--in)}.punch.out{background:var(--out)}
+.punch[disabled]{background:var(--soft);color:var(--muted);cursor:default}
+.dayline{display:flex;gap:12px;margin-top:20px}
+.dayline div{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.dayline small{color:var(--muted);display:block;font-size:.8rem}
+.dayline b{font:700 1.5rem "Bricolage Grotesque",sans-serif;font-variant-numeric:tabular-nums}
+.monthbar{display:flex;align-items:center;justify-content:space-between;margin:8px 0 16px}
+.monthbar h2{font-size:1.4rem;text-transform:capitalize}
+.iconbtn{background:var(--surface);border:1px solid var(--line);color:var(--ink);width:42px;height:42px;border-radius:12px;font-size:1.1rem;cursor:pointer}
+.days{list-style:none;padding:0;margin:0;background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.days li{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.days li:first-child{border-top:0}
+.days li.clickable{cursor:pointer}
+.days .d{font:700 1.3rem "Bricolage Grotesque",sans-serif;line-height:1}
+.days .d small{display:block;font:500 .72rem Figtree,sans-serif;color:var(--muted);margin-top:3px}
+.days .hrs{font-variant-numeric:tabular-nums}
+.days .meta{color:var(--muted);font-size:.85rem}
+.tag{display:inline-block;font-size:.75rem;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--ink);white-space:nowrap}
+.tag.extra{background:var(--accent);color:var(--accent-ink)}.tag.diaria{background:var(--in);color:#fff}.tag.warn{background:var(--out);color:#fff}
+.empty{padding:28px 16px;text-align:center;color:var(--muted);display:block!important}
+.report{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:20px}
+.total{font:700 clamp(2.4rem,11vw,3.4rem) "Bricolage Grotesque",sans-serif;letter-spacing:-.03em;line-height:1;margin:4px 0 2px}
+.rows{margin:18px 0 0;padding:0;list-style:none}
+.rows li{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-top:1px dashed var(--line);font-variant-numeric:tabular-nums}
+.rows li span:first-child{color:var(--muted)}
+.rows li.sum{border-top:2px solid var(--ink);font-weight:600}.rows li.sum span:first-child{color:var(--ink)}
+.note{color:var(--muted);font-size:.85rem;margin-top:14px}
+.actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:600 .95rem Figtree,sans-serif;padding:11px 16px;border-radius:12px;cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.btn.danger{color:var(--out)}
+.alert{background:var(--accent);color:var(--accent-ink);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-weight:500}
+.form{display:grid;gap:14px}
+.form label{display:grid;gap:4px;font-weight:600;font-size:.9rem}
+.form label small{font-weight:400;color:var(--muted)}
+.form input,.form select,.form textarea{font:500 1rem Figtree,sans-serif;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.form .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.login{min-height:70vh;display:flex;flex-direction:column;justify-content:center;gap:18px}
+.login h2{font-size:2rem}
+.login input{font:700 2rem "Bricolage Grotesque",sans-serif;letter-spacing:.4em;text-align:center;padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--surface);color:var(--ink);width:100%}
+.login .err{color:var(--out);min-height:1.5em;font-weight:500}
+dialog{border:0;border-radius:20px;padding:0;background:var(--surface);color:var(--ink);width:min(520px,calc(100% - 24px));max-height:calc(100% - 40px)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog .inner{padding:20px}
+dialog h3{font-size:1.25rem;margin-bottom:14px}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+.hidden{display:none!important}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:10px}
+.box h3{font-size:1.1rem}
+.box p{margin:0;color:var(--muted);font-size:.9rem}
+#qr{background:#fff;padding:16px;border-radius:12px;justify-self:start}
+#qr img,#qr canvas{display:block;width:200px;height:200px}
+#print-area{display:none}
+@media print{
+  body *{visibility:hidden}
+  #print-area,#print-area *{visibility:visible}
+  #print-area{display:block;position:fixed;inset:0;text-align:center;padding-top:15vh;background:#fff;color:#000}
+  #print-area h1{font:700 40px "Bricolage Grotesque",sans-serif;margin:0 0 8px}
+  #print-area p{font:500 20px Figtree,sans-serif;margin:0 0 32px}
+  #print-area img{width:340px;height:340px}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section id="login" class="login hidden">
+    <h2>Ponto da Jôse</h2>
+    <p style="margin:0;color:var(--muted)">Digite seu PIN para entrar.</p>
+    <form id="login-form">
+      <input id="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="current-password" aria-label="PIN" required>
+      <p class="err" id="login-err"></p>
+      <button class="punch in" type="submit">Entrar</button>
+    </form>
+    <p style="margin:0;color:var(--muted);font-size:.85rem">Ao registrar o ponto, sua localização é usada só naquele momento, para confirmar que você está em casa.</p>
+  </section>
+
+  <div id="app" class="hidden">
+    <header class="top">
+      <h1>Ponto da Jôse</h1>
+      <button class="link" id="logout">Sair</button>
+    </header>
+
+    <section id="tab-ponto">
+      <div class="clock"><div class="date" id="today-date"></div><div class="time" id="clock">--:--</div></div>
+      <p class="status" id="status"></p>
+      <button class="punch" id="punch" disabled>…</button>
+      <div class="dayline">
+        <div><small>Entrada</small><b id="t-in">--:--</b></div>
+        <div><small>Saída</small><b id="t-out">--:--</b></div>
+      </div>
+    </section>
+
+    <section id="tab-mes" class="hidden">
+      <div class="monthbar">
+        <button class="iconbtn" data-month="-1" aria-label="Mês anterior">‹</button>
+        <h2 class="month-label"></h2>
+        <button class="iconbtn" data-month="1" aria-label="Próximo mês">›</button>
+      </div>
+      <ul class="days" id="days"></ul>
+      <div class="actions admin-only"><button class="btn" id="add-day">Adicionar dia manualmente</button></div>
+    </section>
+
+    <section id="tab-rel" class="hidden">
+      <div class="monthbar">
+        <button class="iconbtn" data-month="-1" aria-label="Mês anterior">‹</button>
+        <h2 class="month-label"></h2>
+        <button class="iconbtn" data-month="1" aria-label="Próximo mês">›</button>
+      </div>
+      <div id="report"></div>
+    </section>
+
+    <section id="tab-cfg" class="hidden">
+      <h2 style="font-size:1.4rem;margin:8px 0 16px">Ajustes</h2>
+      <form class="form" id="cfg-form">
+        <div class="two">
+          <label>Salário (R$)<input type="number" step="0.01" min="0" name="salario"></label>
+          <label>Valor da diária (R$)<input type="number" step="0.01" min="0" name="diaria"></label>
+        </div>
+        <div class="two">
+          <label>Corte de turno<small>Entrada antes disso = 08h–18h</small><input type="time" name="corte"></label>
+          <label>Tolerância (min)<small>Variação ignorada por dia</small><input type="number" min="0" max="30" name="tolerancia"></label>
+        </div>
+        <div class="two">
+          <label>Divisor mensal<small>Padrão doméstica: 220</small><input type="number" min="1" name="divisor"></label>
+          <label>Sábados normais/mês<small>Os seguintes viram diária</small><input type="number" min="0" max="5" name="sabadosNormais"></label>
+        </div>
+        <label>Raio permitido (metros)<small>Distância máxima da casa para aceitar o ponto. Recomendado: 150 a 200.</small><input type="number" min="50" max="2000" name="raio"></label>
+        <label>Feriados<small>Um por linha, formato AAAA-MM-DD. Trabalho nesses dias vira diária.</small><textarea name="feriados" rows="7"></textarea></label>
+        <div class="two">
+          <label>Novo PIN da Jôse<small>Deixe vazio para manter</small><input type="text" inputmode="numeric" maxlength="8" name="pin_jose"></label>
+          <label>Seu novo PIN<small>Deixe vazio para manter</small><input type="text" inputmode="numeric" maxlength="8" name="pin_admin"></label>
+        </div>
+        <div class="actions"><button class="btn primary" type="submit">Salvar ajustes</button></div>
+      </form>
+      <div class="box" style="margin-top:22px">
+        <h3>Localização da casa</h3>
+        <p id="home-status">Não definida. Enquanto isso, o ponto é aceito de qualquer lugar.</p>
+        <div class="actions" style="margin-top:0"><button class="btn primary" id="set-home">Definir casa aqui</button></div>
+        <p>Use este botão estando dentro de casa.</p>
+      </div>
+      <div class="box" style="margin-top:14px">
+        <h3>QR Code da geladeira</h3>
+        <div id="qr"></div>
+        <div class="actions" style="margin-top:0"><button class="btn primary" id="print-qr">Imprimir QR Code</button></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<nav class="tabs hidden" id="tabs">
+  <button data-tab="ponto" aria-current="true">Ponto</button>
+  <button data-tab="mes">Mês</button>
+  <button data-tab="rel" class="admin-only">Relatório</button>
+  <button data-tab="cfg" class="admin-only">Ajustes</button>
+</nav>
+
+<dialog id="dlg">
+  <form class="inner form" id="day-form" method="dialog">
+    <h3 id="dlg-title">Editar dia</h3>
+    <label>Data<input type="date" name="data" required></label>
+    <div class="two">
+      <label>Entrada<input type="time" name="entrada"></label>
+      <label>Saída<input type="time" name="saida"></label>
+    </div>
+    <label>Tipo do dia
+      <select name="tipo"><option value="auto">Automático</option><option value="normal">Jornada normal</option><option value="diaria">Diária avulsa</option></select>
+    </label>
+    <label>Observação<input type="text" name="obs" maxlength="200"></label>
+    <div class="actions">
+      <button class="btn primary" value="save">Salvar</button>
+      <button class="btn" value="cancel" formnovalidate>Cancelar</button>
+      <button class="btn danger" value="delete" id="dlg-del" formnovalidate>Excluir dia</button>
+    </div>
+  </form>
+</dialog>
+<div id="print-area"><h1>Ponto da Jôse</h1><p>Aponte a câmera para registrar o ponto</p><img id="qr-print" alt="QR Code do ponto"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// >>> Cole aqui o endereço do App da Web do Apps Script (termina em /exec):
+const API="https://script.google.com/macros/s/AKfycbyy_wv8jUvqkys8Ehwnf8UephcCSeVmHzQrNMRHY3lniTXBxQ94nSojxPNr4HMEuqI8/exec";
+const S={pin:null,role:null,cfg:{},days:{},record:null,today:null,offset:0,month:null};
+const $=s=>document.querySelector(s);
+const pad=n=>String(n).padStart(2,"0");
+const toMin=t=>{if(!t)return null;const[h,m]=t.split(":").map(Number);return h*60+m;};
+const fmtH=min=>{min=Math.abs(Math.round(min));return Math.floor(min/60)+"h"+pad(min%60);};
+const brl=v=>v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const WD=["dom","seg","ter","qua","qui","sex","sáb"];
+const TZ="America/Belem";
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2600);}
+function store(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v);}catch(e){}}
+function load(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+
+async function api(action,extra){
+  if(API.indexOf("https://script.google.com/")!==0)throw new Error("Sistema não configurado: falta o endereço do Apps Script.");
+  const res=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},redirect:"follow",body:JSON.stringify(Object.assign({pin:S.pin,action},extra||{}))});
+  let j={};try{j=await res.json();}catch(e){}
+  if(!res.ok||!j.ok){const err=new Error(j.error||j.message||"Falha de conexão.");err.status=res.status;throw err;}
+  return j;
+}
+function monthKey(){return S.month;}
+function shiftMonth(d){const[y,m]=S.month.split("-").map(Number);const dt=new Date(y,m-1+d,1);S.month=dt.getFullYear()+"-"+pad(dt.getMonth()+1);}
+
+async function refresh(){
+  const j=await api("state",{month:S.month});
+  S.role=j.role;S.cfg=j.cfg;S.days=j.days||{};S.record=j.record;S.today=j.today;
+  S.offset=new Date(j.now).getTime()-Date.now();
+  if(!S.month)S.month=j.today.slice(0,7);
+  renderAll();
+  return j;
+}
+
+/* cálculo */
+function calcMonth(mk){
+  const cfg=S.cfg;
+  const recs=Object.values(S.days).filter(r=>r.data&&r.data.startsWith(mk)).sort((a,b)=>a.data.localeCompare(b.data));
+  let sat=0;
+  const out=recs.map(r=>{
+    const dow=new Date(r.data+"T12:00:00").getDay();
+    const feriado=(cfg.feriados||[]).includes(r.data);
+    let cat="normal";
+    if(dow===6&&r.entrada){sat++;cat=sat<=cfg.sabadosNormais?"normal":"diaria";}
+    if(feriado||dow===0)cat="diaria";
+    if(r.tipo==="normal"||r.tipo==="diaria")cat=r.tipo;
+    const x={r,dow,feriado,cat,extra:0,atraso:0,trab:0,turno:null,incompleto:false};
+    const ent=toMin(r.entrada);let sai=toMin(r.saida);
+    if(ent==null){x.incompleto=true;return x;}
+    const start=ent<toMin(cfg.corte)?480:600, fim=start+cfg.jornada;
+    x.turno=start===480?"08h–18h":"10h–20h";
+    if(sai==null){x.incompleto=true;return x;}
+    if(sai<ent)sai+=1440;
+    x.trab=Math.max(0,(sai-ent)-((sai-ent)>360?cfg.almoco:0));
+    if(cat==="normal"){
+      let e=Math.max(0,start-ent)+Math.max(0,sai-fim), a=Math.max(0,ent-start)+Math.max(0,fim-sai);
+      if(e<=cfg.tolerancia)e=0; if(a<=cfg.tolerancia)a=0;
+      x.extra=e;x.atraso=a;
+    }
+    return x;
+  });
+  const sal=+cfg.salario||0, vh=sal/(+cfg.divisor||220), vhe=vh*1.5;
+  const extraMin=out.reduce((s,x)=>s+x.extra,0), atrasoMin=out.reduce((s,x)=>s+x.atraso,0);
+  const diarias=out.filter(x=>x.cat==="diaria"&&!x.incompleto).length;
+  const trab=out.reduce((s,x)=>s+x.trab,0);
+  const valorHE=Math.round(extraMin/60*vhe*100)/100, valorDiarias=diarias*(+cfg.diaria||0);
+  return{out,vh,vhe,extraMin,atrasoMin,diarias,trab,valorHE,valorDiarias,total:sal+valorHE+valorDiarias,
+    dias:out.filter(x=>!x.incompleto).length,incompletos:out.filter(x=>x.incompleto&&x.r.data!==S.today).length};
+}
+
+/* relógio */
+function tick(){
+  const n=new Date(Date.now()+S.offset);
+  const parts=new Intl.DateTimeFormat("pt-BR",{timeZone:TZ,hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false}).formatToParts(n);
+  const g=t=>(parts.find(p=>p.type===t)||{}).value||"00";
+  $("#clock").innerHTML=g("hour")+":"+g("minute")+"<span>:"+g("second")+"</span>";
+  $("#today-date").textContent=n.toLocaleDateString("pt-BR",{timeZone:TZ,weekday:"long",day:"numeric",month:"long"});
+}
+function renderPunch(){
+  const r=S.record||{};
+  $("#t-in").textContent=r.entrada||"--:--";$("#t-out").textContent=r.saida||"--:--";
+  const b=$("#punch"),st=$("#status");
+  if(!r.entrada){b.disabled=false;b.className="punch in";b.textContent="Registrar entrada";st.textContent="Olá, Jôse! Toque para registrar sua chegada.";}
+  else if(!r.saida){const t=toMin(r.entrada)<toMin(S.cfg.corte)?"08h às 18h":"10h às 20h";b.disabled=false;b.className="punch out";b.textContent="Registrar saída";st.textContent="Turno de hoje: "+t+".";}
+  else{b.disabled=true;b.className="punch";b.textContent="Dia encerrado";st.textContent="Ponto de hoje completo. Até amanhã!";}
+}
+function getPos(){
+  return new Promise((res,rej)=>{
+    if(!navigator.geolocation)return rej(new Error("Este celular não permite localização no navegador."));
+    navigator.geolocation.getCurrentPosition(p=>res(p.coords),e=>{
+      if(e.code===1)rej(new Error("Permita o acesso à localização para registrar o ponto."));
+      else rej(new Error("Não foi possível obter a localização. Tente de novo perto de uma janela."));
+    },{enableHighAccuracy:true,timeout:20000,maximumAge:0});
+  });
+}
+async function punch(){
+  const isIn=!(S.record&&S.record.entrada);
+  const n=new Date(Date.now()+S.offset);
+  const t=n.toLocaleTimeString("pt-BR",{timeZone:TZ,hour:"2-digit",minute:"2-digit"});
+  if(!confirm((isIn?"Registrar ENTRADA agora (":"Registrar SAÍDA agora (")+t+")?"))return;
+  const b=$("#punch");b.disabled=true;b.textContent="Obtendo localização…";
+  try{
+    const c=await getPos();
+    b.textContent="Registrando…";
+    const j=await api("punch",{lat:c.latitude,lng:c.longitude,acc:c.accuracy});
+    toast((j.tipo==="entrada"?"Entrada":"Saída")+" registrada às "+j.time);
+    await refresh();
+  }catch(e){alert(e.message);renderPunch();}
+}
+
+function renderMonthLabels(){
+  const[y,m]=S.month.split("-").map(Number);
+  document.querySelectorAll(".month-label").forEach(h=>h.textContent=new Date(y,m-1,1).toLocaleDateString("pt-BR",{month:"long",year:"numeric"}));
+}
+function renderDays(){
+  const c=calcMonth(S.month),ul=$("#days");ul.innerHTML="";
+  if(!c.out.length){ul.innerHTML='<li class="empty">Nenhum ponto registrado neste mês.</li>';return;}
+  const admin=S.role==="admin";
+  c.out.slice().reverse().forEach(x=>{
+    const li=document.createElement("li");
+    if(admin){li.className="clickable";li.tabIndex=0;li.onclick=()=>openDay(x.r.data);li.onkeydown=e=>{if(e.key==="Enter")openDay(x.r.data);};}
+    const d=document.createElement("div");d.className="d";d.innerHTML=x.r.data.slice(8)+"<small>"+WD[x.dow]+"</small>";
+    const mid=document.createElement("div");
+    const h=document.createElement("div");h.className="hrs";h.textContent=(x.r.entrada||"--:--")+" → "+(x.r.saida||"--:--");
+    const m=document.createElement("div");m.className="meta";
+    const loc=admin&&(x.r.distEntrada!=null||x.r.distSaida!=null)?"📍 "+[x.r.distEntrada,x.r.distSaida].map(v=>v==null?"–":Math.round(v)+" m").join(" / "):"";
+    m.textContent=[x.turno,x.trab?fmtH(x.trab)+" trabalhadas":"",x.feriado?"feriado":"",loc,x.r.obs||""].filter(Boolean).join(" • ");
+    mid.append(h,m);
+    const tag=document.createElement("span");tag.className="tag";
+    if(x.incompleto){if(x.r.data===S.today){tag.textContent="Em andamento";}else{tag.classList.add("warn");tag.textContent="Incompleto";}}
+    else if(x.cat==="diaria"){tag.classList.add("diaria");tag.textContent="Diária";}
+    else if(x.extra){tag.classList.add("extra");tag.textContent="+"+fmtH(x.extra)+" extra";}
+    else if(x.atraso){tag.textContent="-"+fmtH(x.atraso);}
+    else tag.textContent="Normal";
+    li.append(d,mid,tag);ul.append(li);
+  });
+}
+function renderReport(){
+  if(S.role!=="admin")return;
+  const c=calcMonth(S.month),cfg=S.cfg,warn=[];
+  if(!(+cfg.diaria)&&c.diarias)warn.push("Defina o valor da diária em Ajustes. Há "+c.diarias+" diária(s) neste mês.");
+  if(c.incompletos)warn.push(c.incompletos+" dia(s) sem saída registrada. Corrija na aba Mês.");
+  $("#report").innerHTML=warn.map(w=>'<div class="alert">'+w+'</div>').join("")+
+  '<div class="report"><div style="color:var(--muted)">Total a pagar</div><div class="total">'+brl(c.total)+'</div>'+
+  '<div style="color:var(--muted)">'+c.dias+' dias trabalhados • '+fmtH(c.trab)+' no total</div><ul class="rows">'+
+  '<li><span>Salário</span><span>'+brl(+cfg.salario)+'</span></li>'+
+  '<li><span>Horas extras ('+fmtH(c.extraMin)+' × '+brl(c.vhe)+')</span><span>'+brl(c.valorHE)+'</span></li>'+
+  '<li><span>Diárias ('+c.diarias+' × '+brl(+cfg.diaria)+')</span><span>'+brl(c.valorDiarias)+'</span></li>'+
+  '<li class="sum"><span>Total</span><span>'+brl(c.total)+'</span></li></ul><ul class="rows">'+
+  '<li><span>Valor da hora normal</span><span>'+brl(c.vh)+'</span></li>'+
+  '<li><span>Valor da hora extra (50%)</span><span>'+brl(c.vhe)+'</span></li>'+
+  '<li><span>Atrasos / saídas antecipadas</span><span>'+fmtH(c.atrasoMin)+'</span></li></ul>'+
+  '<p class="note">Atrasos aparecem só para conferência e não são descontados. O total não inclui INSS, FGTS ou reflexos de horas extras no descanso semanal.</p>'+
+  '<div class="actions"><button class="btn primary" id="csv">Baixar planilha do mês</button></div></div>';
+  $("#csv").onclick=()=>downloadCSV(c);
+}
+function downloadCSV(c){
+  const n=v=>v.toFixed(2).replace(".",",");
+  const L=[["Data","Dia","Entrada","Saida","Turno","Tipo","Horas trabalhadas","Hora extra","Atraso","Obs"].join(";")];
+  c.out.forEach(x=>L.push([x.r.data,WD[x.dow],x.r.entrada||"",x.r.saida||"",x.turno||"",x.incompleto?"incompleto":x.cat,fmtH(x.trab),fmtH(x.extra),fmtH(x.atraso),(x.r.obs||"").replace(/;/g,",")].join(";")));
+  L.push("","Salario;"+n(+S.cfg.salario),"Horas extras;"+fmtH(c.extraMin)+";"+n(c.valorHE),"Diarias;"+c.diarias+";"+n(c.valorDiarias),"TOTAL;"+n(c.total));
+  const blob=new Blob(["\ufeff"+L.join("\n")],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ponto-jose-"+S.month+".csv";document.body.append(a);a.click();a.remove();
+}
+
+let editing=null;
+function openDay(date){
+  editing=date||null;const r=(date&&S.days[date])||{},f=$("#day-form");
+  f.data.value=date||S.today;f.data.disabled=!!date;
+  f.entrada.value=r.entrada||"";f.saida.value=r.saida||"";f.tipo.value=r.tipo||"auto";f.obs.value=r.obs||"";
+  $("#dlg-title").textContent=date?"Editar dia":"Adicionar dia";$("#dlg-del").classList.toggle("hidden",!date);
+  $("#dlg").showModal();
+}
+$("#dlg").addEventListener("close",async()=>{
+  const v=$("#dlg").returnValue,f=$("#day-form"),date=editing||f.data.value;
+  if(!date||!v||v==="cancel")return;
+  try{
+    if(v==="delete"){if(!confirm("Excluir o registro de "+date+"?"))return;await api("saveDay",{data:date,delete:true});toast("Dia excluído.");}
+    else{await api("saveDay",{data:date,entrada:f.entrada.value,saida:f.saida.value,tipo:f.tipo.value,obs:f.obs.value});toast("Dia salvo.");}
+    await refresh();
+  }catch(e){toast(e.message);}
+});
+
+function fillCfg(){
+  const f=$("#cfg-form"),c=S.cfg;
+  ["salario","diaria","corte","tolerancia","divisor","sabadosNormais","raio"].forEach(k=>f[k].value=c[k]!=null?c[k]:"");
+  const hs=$("#home-status");
+  if(c.casa){hs.textContent="";const a=document.createElement("a");a.href="https://www.google.com/maps?q="+c.casa.lat+","+c.casa.lng;a.target="_blank";a.rel="noopener";a.textContent="Casa definida. Ver no mapa";hs.append(a);}
+  else hs.textContent="Não definida. Enquanto isso, o ponto é aceito de qualquer lugar.";
+  renderQR();
+  f.feriados.value=(c.feriados||[]).join("\n");f.pin_jose.value="";f.pin_admin.value="";
+}
+$("#cfg-form").addEventListener("submit",async e=>{
+  e.preventDefault();const f=e.target;
+  const cfg={raio:f.raio.value,salario:f.salario.value,diaria:f.diaria.value,corte:f.corte.value,tolerancia:f.tolerancia.value,divisor:f.divisor.value,sabadosNormais:f.sabadosNormais.value,
+    feriados:f.feriados.value.split(/\s+/).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)),pin_jose:f.pin_jose.value.trim(),pin_admin:f.pin_admin.value.trim()};
+  if(cfg.pin_jose&&cfg.pin_jose===cfg.pin_admin){toast("Os dois PINs precisam ser diferentes.");return;}
+  try{await api("saveCfg",{cfg});if(cfg.pin_admin){S.pin=cfg.pin_admin;store("evp_pin",S.pin);}toast("Ajustes salvos.");await refresh();fillCfg();}
+  catch(err){toast(err.message);}
+});
+
+function appURL(){return location.origin+location.pathname;}
+function renderQR(){
+  const el=$("#qr");if(el.dataset.done||!window.QRCode)return;
+  new QRCode(el,{text:appURL(),width:400,height:400,correctLevel:QRCode.CorrectLevel.M});
+  el.dataset.done="1";
+}
+$("#print-qr").onclick=()=>{
+  const c=$("#qr canvas"),i=$("#qr img");
+  $("#qr-print").src=c?c.toDataURL("image/png"):(i?i.src:"");
+  setTimeout(()=>window.print(),150);
+};
+$("#set-home").onclick=async()=>{
+  if(!confirm("Você está dentro de casa agora? A localização atual será usada como referência do ponto."))return;
+  const b=$("#set-home");b.disabled=true;b.textContent="Obtendo localização…";
+  try{const c=await getPos();await api("setHome",{lat:c.latitude,lng:c.longitude,acc:c.accuracy});toast("Casa definida (precisão de "+Math.round(c.accuracy)+" m).");await refresh();fillCfg();}
+  catch(e){alert(e.message);}
+  b.disabled=false;b.textContent="Definir casa aqui";
+};
+function showTab(name){
+  ["ponto","mes","rel","cfg"].forEach(t=>$("#tab-"+t).classList.toggle("hidden",t!==name));
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-current",b.dataset.tab===name));
+  if(name==="cfg")fillCfg();window.scrollTo(0,0);
+}
+function renderAll(){
+  document.querySelectorAll(".admin-only").forEach(e=>e.classList.toggle("hidden",S.role!=="admin"));
+  renderPunch();renderMonthLabels();renderDays();renderReport();
+}
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+document.querySelectorAll("[data-month]").forEach(b=>b.onclick=async()=>{shiftMonth(+b.dataset.month);renderMonthLabels();try{await refresh();}catch(e){toast(e.message);}});
+$("#punch").onclick=punch;
+$("#add-day").onclick=()=>openDay(null);
+$("#logout").onclick=()=>{store("evp_pin",null);location.reload();};
+
+function showLogin(msg){$("#app").classList.add("hidden");$("#tabs").classList.add("hidden");$("#login").classList.remove("hidden");$("#login-err").textContent=msg||"";$("#pin").value="";$("#pin").focus();}
+async function enter(pin){
+  S.pin=pin;
+  try{await refresh();store("evp_pin",pin);$("#login").classList.add("hidden");$("#app").classList.remove("hidden");$("#tabs").classList.remove("hidden");showTab("ponto");}
+  catch(e){store("evp_pin",null);showLogin(e.message);}
+}
+$("#login-form").addEventListener("submit",e=>{e.preventDefault();enter($("#pin").value.trim());});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.role)refresh().catch(()=>{});});
+
+tick();setInterval(tick,1000);
+const saved=load("evp_pin");
+if(saved)enter(saved);else showLogin();
+</script>
+</body>
+</html>
