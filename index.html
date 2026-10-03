@@ -80,6 +80,10 @@ dialog h3{font-size:1.25rem;margin-bottom:14px}
 .toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;max-width:90vw;text-align:center}
 .toast.show{opacity:1}
 .hidden{display:none!important}
+.folga{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:0 0 14px;cursor:pointer}
+.folga input{width:26px;height:26px;accent-color:var(--in);flex:none}
+.folga b{display:block;font-size:1.05rem}
+.folga small{color:var(--muted);font-size:.85rem}
 .box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:grid;gap:10px}
 .box h3{font-size:1.1rem}
 .box p{margin:0;color:var(--muted);font-size:.9rem}
@@ -119,6 +123,7 @@ dialog h3{font-size:1.25rem;margin-bottom:14px}
     <section id="tab-ponto">
       <div class="clock"><div class="date" id="today-date"></div><div class="time" id="clock">--:--</div></div>
       <p class="status" id="status"></p>
+      <label class="folga" id="folga-box"><input type="checkbox" id="folga"><span><b>Folga trabalhada?</b><small>Marque se hoje é feriado ou seu dia de folga</small></span></label>
       <button class="punch" id="punch" disabled>…</button>
       <div class="dayline">
         <div><small>Entrada</small><b id="t-in">--:--</b></div>
@@ -150,7 +155,7 @@ dialog h3{font-size:1.25rem;margin-bottom:14px}
       <form class="form" id="cfg-form">
         <div class="two">
           <label>Salário (R$)<input type="number" step="0.01" min="0" name="salario"></label>
-          <label>Valor da diária (R$)<input type="number" step="0.01" min="0" name="diaria"></label>
+          <label>Valor da diária (R$)<small>Automático: salário ÷ 30</small><input type="text" name="diaria" disabled></label>
         </div>
         <div class="two">
           <label>Corte de turno<small>Entrada antes disso = 08h–18h</small><input type="time" name="corte"></label>
@@ -199,7 +204,7 @@ dialog h3{font-size:1.25rem;margin-bottom:14px}
       <label>Saída<input type="time" name="saida"></label>
     </div>
     <label>Tipo do dia
-      <select name="tipo"><option value="auto">Automático</option><option value="normal">Jornada normal</option><option value="diaria">Diária avulsa</option></select>
+      <select name="tipo"><option value="auto">Automático</option><option value="normal">Jornada normal</option><option value="diaria">Folga trabalhada</option></select>
     </label>
     <label>Observação<input type="text" name="obs" maxlength="200"></label>
     <div class="actions">
@@ -266,19 +271,18 @@ function calcMonth(mk){
     if(sai==null){x.incompleto=true;return x;}
     if(sai<ent)sai+=1440;
     x.trab=Math.max(0,(sai-ent)-((sai-ent)>360?cfg.almoco:0));
-    if(cat==="normal"){
-      let e=Math.max(0,start-ent)+Math.max(0,sai-fim), a=Math.max(0,ent-start)+Math.max(0,fim-sai);
-      if(e<=cfg.tolerancia)e=0; if(a<=cfg.tolerancia)a=0;
-      x.extra=e;x.atraso=a;
-    }
+    let e=Math.max(0,start-ent)+Math.max(0,sai-fim), a=Math.max(0,ent-start)+Math.max(0,fim-sai);
+    if(e<=cfg.tolerancia)e=0; if(a<=cfg.tolerancia)a=0;
+    x.extra=e; x.atraso=cat==="normal"?a:0;
     return x;
   });
   const sal=+cfg.salario||0, vh=sal/(+cfg.divisor||220), vhe=vh*1.5;
   const extraMin=out.reduce((s,x)=>s+x.extra,0), atrasoMin=out.reduce((s,x)=>s+x.atraso,0);
   const diarias=out.filter(x=>x.cat==="diaria"&&!x.incompleto).length;
   const trab=out.reduce((s,x)=>s+x.trab,0);
-  const valorHE=Math.round(extraMin/60*vhe*100)/100, valorDiarias=diarias*(+cfg.diaria||0);
-  return{out,vh,vhe,extraMin,atrasoMin,diarias,trab,valorHE,valorDiarias,total:sal+valorHE+valorDiarias,
+  const vd=Math.round(sal/30*100)/100;
+  const valorHE=Math.round(extraMin/60*vhe*100)/100, valorDiarias=Math.round(diarias*vd*100)/100;
+  return{out,vh,vhe,vd,extraMin,atrasoMin,diarias,trab,valorHE,valorDiarias,total:sal+valorHE+valorDiarias,
     dias:out.filter(x=>!x.incompleto).length,incompletos:out.filter(x=>x.incompleto&&x.r.data!==S.today).length};
 }
 
@@ -294,6 +298,8 @@ function renderPunch(){
   const r=S.record||{};
   $("#t-in").textContent=r.entrada||"--:--";$("#t-out").textContent=r.saida||"--:--";
   const b=$("#punch"),st=$("#status");
+  $("#folga-box").classList.toggle("hidden",!!r.saida);
+  $("#folga").checked=r.tipo==="diaria";
   if(!r.entrada){b.disabled=false;b.className="punch in";b.textContent="Registrar entrada";st.textContent="Olá, Jôse! Toque para registrar sua chegada.";}
   else if(!r.saida){const t=toMin(r.entrada)<toMin(S.cfg.corte)?"08h às 18h":"10h às 20h";b.disabled=false;b.className="punch out";b.textContent="Registrar saída";st.textContent="Turno de hoje: "+t+".";}
   else{b.disabled=true;b.className="punch";b.textContent="Dia encerrado";st.textContent="Ponto de hoje completo. Até amanhã!";}
@@ -311,12 +317,13 @@ async function punch(){
   const isIn=!(S.record&&S.record.entrada);
   const n=new Date(Date.now()+S.offset);
   const t=n.toLocaleTimeString("pt-BR",{timeZone:TZ,hour:"2-digit",minute:"2-digit"});
-  if(!confirm((isIn?"Registrar ENTRADA agora (":"Registrar SAÍDA agora (")+t+")?"))return;
+  const folga=$("#folga").checked;
+  if(!confirm((isIn?"Registrar ENTRADA agora (":"Registrar SAÍDA agora (")+t+")"+(folga?" como FOLGA TRABALHADA":"")+"?"))return;
   const b=$("#punch");b.disabled=true;b.textContent="Obtendo localização…";
   try{
     const c=await getPos();
     b.textContent="Registrando…";
-    const j=await api("punch",{lat:c.latitude,lng:c.longitude,acc:c.accuracy});
+    const j=await api("punch",{lat:c.latitude,lng:c.longitude,acc:c.accuracy,folga});
     toast((j.tipo==="entrada"?"Entrada":"Saída")+" registrada às "+j.time);
     await refresh();
   }catch(e){alert(e.message);renderPunch();}
@@ -342,7 +349,7 @@ function renderDays(){
     mid.append(h,m);
     const tag=document.createElement("span");tag.className="tag";
     if(x.incompleto){if(x.r.data===S.today){tag.textContent="Em andamento";}else{tag.classList.add("warn");tag.textContent="Incompleto";}}
-    else if(x.cat==="diaria"){tag.classList.add("diaria");tag.textContent="Diária";}
+    else if(x.cat==="diaria"){tag.classList.add("diaria");tag.textContent="Folga"+(x.extra?" +"+fmtH(x.extra):"");}
     else if(x.extra){tag.classList.add("extra");tag.textContent="+"+fmtH(x.extra)+" extra";}
     else if(x.atraso){tag.textContent="-"+fmtH(x.atraso);}
     else tag.textContent="Normal";
@@ -352,14 +359,13 @@ function renderDays(){
 function renderReport(){
   if(S.role!=="admin")return;
   const c=calcMonth(S.month),cfg=S.cfg,warn=[];
-  if(!(+cfg.diaria)&&c.diarias)warn.push("Defina o valor da diária em Ajustes. Há "+c.diarias+" diária(s) neste mês.");
   if(c.incompletos)warn.push(c.incompletos+" dia(s) sem saída registrada. Corrija na aba Mês.");
   $("#report").innerHTML=warn.map(w=>'<div class="alert">'+w+'</div>').join("")+
   '<div class="report"><div style="color:var(--muted)">Total a pagar</div><div class="total">'+brl(c.total)+'</div>'+
   '<div style="color:var(--muted)">'+c.dias+' dias trabalhados • '+fmtH(c.trab)+' no total</div><ul class="rows">'+
   '<li><span>Salário</span><span>'+brl(+cfg.salario)+'</span></li>'+
   '<li><span>Horas extras ('+fmtH(c.extraMin)+' × '+brl(c.vhe)+')</span><span>'+brl(c.valorHE)+'</span></li>'+
-  '<li><span>Diárias ('+c.diarias+' × '+brl(+cfg.diaria)+')</span><span>'+brl(c.valorDiarias)+'</span></li>'+
+  '<li><span>Folgas trabalhadas ('+c.diarias+' × '+brl(c.vd)+')</span><span>'+brl(c.valorDiarias)+'</span></li>'+
   '<li class="sum"><span>Total</span><span>'+brl(c.total)+'</span></li></ul><ul class="rows">'+
   '<li><span>Valor da hora normal</span><span>'+brl(c.vh)+'</span></li>'+
   '<li><span>Valor da hora extra (50%)</span><span>'+brl(c.vhe)+'</span></li>'+
@@ -371,8 +377,8 @@ function renderReport(){
 function downloadCSV(c){
   const n=v=>v.toFixed(2).replace(".",",");
   const L=[["Data","Dia","Entrada","Saida","Turno","Tipo","Horas trabalhadas","Hora extra","Atraso","Obs"].join(";")];
-  c.out.forEach(x=>L.push([x.r.data,WD[x.dow],x.r.entrada||"",x.r.saida||"",x.turno||"",x.incompleto?"incompleto":x.cat,fmtH(x.trab),fmtH(x.extra),fmtH(x.atraso),(x.r.obs||"").replace(/;/g,",")].join(";")));
-  L.push("","Salario;"+n(+S.cfg.salario),"Horas extras;"+fmtH(c.extraMin)+";"+n(c.valorHE),"Diarias;"+c.diarias+";"+n(c.valorDiarias),"TOTAL;"+n(c.total));
+  c.out.forEach(x=>L.push([x.r.data,WD[x.dow],x.r.entrada||"",x.r.saida||"",x.turno||"",x.incompleto?"incompleto":(x.cat==="diaria"?"folga trabalhada":"normal"),fmtH(x.trab),fmtH(x.extra),fmtH(x.atraso),(x.r.obs||"").replace(/;/g,",")].join(";")));
+  L.push("","Salario;"+n(+S.cfg.salario),"Horas extras;"+fmtH(c.extraMin)+";"+n(c.valorHE),"Folgas trabalhadas;"+c.diarias+";"+n(c.valorDiarias),"TOTAL;"+n(c.total));
   const blob=new Blob(["\ufeff"+L.join("\n")],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ponto-jose-"+S.month+".csv";document.body.append(a);a.click();a.remove();
 }
@@ -397,7 +403,8 @@ $("#dlg").addEventListener("close",async()=>{
 
 function fillCfg(){
   const f=$("#cfg-form"),c=S.cfg;
-  ["salario","diaria","corte","tolerancia","divisor","sabadosNormais","raio"].forEach(k=>f[k].value=c[k]!=null?c[k]:"");
+  ["salario","corte","tolerancia","divisor","sabadosNormais","raio"].forEach(k=>f[k].value=c[k]!=null?c[k]:"");
+  f.diaria.value=brl(Math.round((+c.salario||0)/30*100)/100);
   const hs=$("#home-status");
   if(c.casa){hs.textContent="";const a=document.createElement("a");a.href="https://www.google.com/maps?q="+c.casa.lat+","+c.casa.lng;a.target="_blank";a.rel="noopener";a.textContent="Casa definida. Ver no mapa";hs.append(a);}
   else hs.textContent="Não definida. Enquanto isso, o ponto é aceito de qualquer lugar.";
@@ -406,7 +413,7 @@ function fillCfg(){
 }
 $("#cfg-form").addEventListener("submit",async e=>{
   e.preventDefault();const f=e.target;
-  const cfg={raio:f.raio.value,salario:f.salario.value,diaria:f.diaria.value,corte:f.corte.value,tolerancia:f.tolerancia.value,divisor:f.divisor.value,sabadosNormais:f.sabadosNormais.value,
+  const cfg={raio:f.raio.value,salario:f.salario.value,corte:f.corte.value,tolerancia:f.tolerancia.value,divisor:f.divisor.value,sabadosNormais:f.sabadosNormais.value,
     feriados:f.feriados.value.split(/\s+/).filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)),pin_jose:f.pin_jose.value.trim(),pin_admin:f.pin_admin.value.trim()};
   if(cfg.pin_jose&&cfg.pin_jose===cfg.pin_admin){toast("Os dois PINs precisam ser diferentes.");return;}
   try{await api("saveCfg",{cfg});if(cfg.pin_admin){S.pin=cfg.pin_admin;store("evp_pin",S.pin);}toast("Ajustes salvos.");await refresh();fillCfg();}
